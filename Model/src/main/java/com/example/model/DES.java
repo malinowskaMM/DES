@@ -193,7 +193,15 @@ public class DES {
     }
 
 
-    public Block OneRound(Block block, Block48 key) {
+    public BlockHalf OneRound(BlockHalf left, BlockHalf right, Block48 key) {
+        BlockHalf newRight = FFunction(right, key);
+        BlockHalf result = xorLeftRight(left, newRight);
+        return result;
+    }
+
+    public Block OneBlock(Block block, Block48[] key){
+        block = BitOperations.permutation(block, initialPermutationTable, 64);
+
         BlockHalf left = new BlockHalf();
         BlockHalf right = new BlockHalf();
 
@@ -202,10 +210,22 @@ public class DES {
             right.setBit(i,block.getBit(i+32));
         }
 
-        BlockHalf newRight = FFunction(right, key);
-        BlockHalf result = xorLeftRight(left, newRight);
-        return result;
+        for(int i = 0; i < 16; i++) {
+            BlockHalf newRight = OneRound(left, right, key[i]);
+            left = right;
+            right = newRight;
+        }
+
+        Block roundResult = new Block();
+        for(int i = 0; i < 32; i++) {
+            roundResult.setBit(i, left.getBit(i));
+            roundResult.setBit(i+32, right.getBit(i));
+        }
+
+        return BitOperations.permutation(roundResult,inversedInitialPermutationTable, 64 );
     }
+
+
 
 
 }
