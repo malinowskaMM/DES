@@ -225,6 +225,39 @@ public class DES {
         return BitOperations.permutation(roundResult,inversedInitialPermutationTable, 64 );
     }
 
+    public byte[] encrypted(byte[] file, Block48[] key) {
+        byte[] encrypted = new byte[file.length];
+        int blockCounter = file.length/8;
+        Block[] blocks = new Block[blockCounter];
+        Block[] encryptedBlocks = new Block[blockCounter];
+        for(int i = 0; i < blockCounter; i++) {
+            blocks[i].block = file;
+            Block encryptedBlock = OneBlock(blocks[i], key);
+            encryptedBlocks[i] = encryptedBlock;
+        }
+
+        for(int i = 0; i < blockCounter; i++) {
+            for(int j = 0; j < 8; j++) {
+                encrypted[i + j] = encryptedBlocks[i].block[j];
+            }
+        }
+        return encrypted;
+    }
+
+    public Block48[] reversedKeysOrder(Block48[] key) {
+        Block48[] reversed = new Block48[key.length];
+        for(int i = 0; i < key.length; i++) {
+            reversed[i] = key[key.length-1-i];
+        }
+        return reversed;
+    }
+
+    public byte[] decrypt(byte[] file, Block48[] key) {
+        return encrypted(file, reversedKeysOrder(key));
+    }
+
+
+
 
 
 
