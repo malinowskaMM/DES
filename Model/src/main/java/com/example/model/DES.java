@@ -252,7 +252,7 @@ public class DES {
         return reversed;
     }
 
-    public byte[] decrypt(byte[] file, Block48[] key) {
+    public byte[] decrypted(byte[] file, Block48[] key) {
         return encrypted(file, reversedKeysOrder(key));
     }
 
