@@ -60,7 +60,7 @@ public class HelloController extends Window {
 //        if(key3Field.getText().isEmpty()) {
 //            openWarningDialog("Brak trzeciego klucza");
 //            return -1;}
-
+        des = new TripleDES();
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(this);
         try {
@@ -94,7 +94,7 @@ public class HelloController extends Window {
 //        if(key3Field.getText().isEmpty()) {
 //            openWarningDialog("Brak trzeciego klucza");
 //            return -1;}
-
+        des = new TripleDES();
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(this);
         try {

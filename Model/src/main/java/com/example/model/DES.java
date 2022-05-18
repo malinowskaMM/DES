@@ -143,8 +143,9 @@ public class DES {
     public BlockHalf substitution(Block48 block48){
         Block8[] blocks =  new Block8[8];
         for(int i =0; i < 8; i++) {
+            blocks[i] = new Block8();
             for(int j =0; j < 6; j++) {
-                blocks[i].setBit(j, block48.getBit(i*8+j));
+                blocks[i].setBit(j, block48.getBit(i*6+j));
             }
         }
         int[][] coordinates =  new int[8][2];
@@ -178,7 +179,7 @@ public class DES {
             int value = sbox[coordinates[i][0]] [coordinates[i][1]];
             Block8 block8 = fromIntTo4Block(value);
             for(int j = 0; j < 4; j++) {
-                results.setBit(i*8+j, block8.getBit(j));
+                results.setBit(i*4+j, block8.getBit(j));
             }
         }
         return results;
@@ -231,7 +232,12 @@ public class DES {
         Block[] blocks = new Block[blockCounter];
         Block[] encryptedBlocks = new Block[blockCounter];
         for(int i = 0; i < blockCounter; i++) {
-            blocks[i].block = file;
+            blocks[i] = new Block();
+            byte[] blockOfFile = new byte[8];
+            for(int j = 0; j < 8; j++){
+                blockOfFile[j] = file[i+j];
+            }
+            blocks[i].block = blockOfFile;
             Block encryptedBlock = OneBlock(blocks[i], key);
             encryptedBlocks[i] = encryptedBlock;
         }

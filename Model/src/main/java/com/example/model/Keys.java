@@ -57,8 +57,14 @@ public class Keys {
         BlockHalf[] rightBlocks = new BlockHalf[16];
 
         for(int i = 0; i < 16; i++) {
-            BlockHalf tempBlockL = blockL;
-            BlockHalf tempBlockR = blockR;
+            BlockHalf tempBlockL = new BlockHalf();
+            BlockHalf tempBlockR = new BlockHalf();
+            for(int k = 0; k < 32; k++)
+            {
+                tempBlockL.setBit(k, blockL.getBit(k));
+                tempBlockR.setBit(k, blockR.getBit(k));
+            }
+
             for(int j = 0; j < keyLeftShiftTable[i]; j++) {
                 tempBlockL = moveLeft(tempBlockL);
                 tempBlockR = moveLeft(tempBlockR);

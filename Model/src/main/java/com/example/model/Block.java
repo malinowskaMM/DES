@@ -17,6 +17,7 @@ public class Block {
     Block(int numberOfBytes)
     {
         block = new byte[numberOfBytes];
+
     }
 
     public byte[] getBlock() {
