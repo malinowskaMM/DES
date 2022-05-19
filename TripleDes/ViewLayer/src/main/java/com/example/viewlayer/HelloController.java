@@ -1,6 +1,7 @@
 package com.example.viewlayer;
 
 import com.example.model.Key;
+import com.example.model.StringByteConverter;
 import com.example.model.TripleDes;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
@@ -42,6 +43,9 @@ public class HelloController extends Window {
     String cryptogramText;
     TripleDes tripleDes;
     Key[] keys;
+    Key first;
+    Key second;
+    Key third;
     byte[] byteArray;
 
     private void openWarningDialog(String text) {
@@ -219,20 +223,65 @@ public class HelloController extends Window {
     }
 
     public void loadKeysFromFile(ActionEvent actionEvent) {
+        byte[] key1 = new byte[8];
+        byte[] key2 = new byte[8];
+        byte[] key3 = new byte[8];
+
+        FileChooser fileChooser = new FileChooser();
+        File selected = fileChooser.showOpenDialog(this);
+        byte[] fileContent = new byte[24];
+        try {
+            fileContent = Files.readAllBytes(Path.of(selected.getPath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        for(int i = 0; i < 8; i++) {
+            key1[i] = fileContent[i];
+            key2[i] = fileContent[8+i];
+            key3[i] = fileContent[16+i];
+        }
+
+        key1Field.setText(StringByteConverter.BytesToString(key1));;
+        key2Field.setText(StringByteConverter.BytesToString(key2));
+        key3Field.setText(StringByteConverter.BytesToString(key3));
+
     }
 
-    public void saveKeysToFile(ActionEvent actionEvent) {
+    public void saveKeysToFile(ActionEvent actionEvent) throws Exception {
+        keys = new Key[3];
+        keys[0] = new Key(key1Field.getText());
+        keys[1] = new Key(key2Field.getText());
+        keys[2] = new Key(key3Field.getText());
+
+        byte[] outKeys = new byte[keys[0].getBytes().length+keys[1].getBytes().length+keys[2].getBytes().length];
+        for(int i = 0; i < outKeys.length; i++) {
+            if(i < 8) outKeys[i] = keys[0].getBytes()[i];
+            else if (i >= 8 && i < 16) outKeys[i] = keys[1].getBytes()[i-8];
+            else if (i >= 16) outKeys[i] = keys[2].getBytes()[i-16];
+        }
+        FileChooser fileChooser = new FileChooser();
+        File destination = fileChooser.showSaveDialog(this);
+        Files.write(destination.toPath(), outKeys);
     }
 
-    public void generateFirstKey(ActionEvent actionEvent) {
+    public void generateFirstKey(){
+        first = new Key();
+        key1Field.setText(first.getKeyText());
     }
 
-    public void generateSecondKey(ActionEvent actionEvent) {
+    public void generateSecondKey() {
+        second = new Key();
+        key2Field.setText(second.getKeyText());
     }
 
-    public void generateThirdKey(ActionEvent actionEvent) {
+    public void generateThirdKey() {
+        third = new Key();
+        key3Field.setText(third.getKeyText());
     }
 
-    public void generateAllKeys(ActionEvent actionEvent) {
+    public void generateAllKeys() {
+        generateFirstKey();
+        generateSecondKey();
+        generateThirdKey();
     }
 }

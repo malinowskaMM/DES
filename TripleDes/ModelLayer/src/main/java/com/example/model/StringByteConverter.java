@@ -1,7 +1,7 @@
 package com.example.model;
 
 public class StringByteConverter {
-    static byte [] StringToByte(String text) //konwersja Stringów na Bajty
+    public static byte [] StringToByte(String text) //konwersja Stringów na Bajty
     {
         byte[] bytes = new byte[text.length()<<1];
         int position = 0;
@@ -12,7 +12,7 @@ public class StringByteConverter {
         }
         return bytes;
     }
-    static String BytesToString(byte[] bytes) { // Konwersja Bajtów na Stringi
+    public static String BytesToString(byte[] bytes) { // Konwersja Bajtów na Stringi
         char[] buffer = new char[bytes.length >>1];
         for (int i = 0; i < buffer.length; i++) {
             int bpos = i << 1;
