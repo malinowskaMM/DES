@@ -60,12 +60,12 @@ public class SubKey {
     }
     private void moveBitsLeft28(BlockHalf block28)
     {
-        boolean orphanBit = block28.getBit(0);
+        boolean bit = block28.getBit(0);
 
         for (int i = 0; i < 27; i++)
             block28.setBit(i, block28.getBit(i + 1));
 
-        block28.setBit(27, orphanBit);
+        block28.setBit(27, bit);
     }
 
     private Block48 compressKey(Block56 block56) {
@@ -80,9 +80,7 @@ public class SubKey {
     private Block48[] generateRoundKeys(Key key) throws Exception
     {
         Block48[] generatedKeys = new Block48[numberOfRounds];
-
         Block56 key56 = dropParityBits(new Block(key.getBytes()));
-
         for (int i = 0; i < numberOfRounds; i++)
         {
             for (int j = 0; j < numberOfKeyShiftsPerRound[i]; j++)
@@ -90,7 +88,6 @@ public class SubKey {
 
             generatedKeys[i] = compressKey(key56);
         }
-
         return generatedKeys;
     }
 }
