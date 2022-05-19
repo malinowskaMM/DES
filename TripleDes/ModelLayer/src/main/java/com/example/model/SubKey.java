@@ -77,7 +77,6 @@ public class SubKey {
         return block48;
     }
 
-    //Generowanie poszczególnych klczy funkcji Feistela
     private Block48[] generateRoundKeys(Key key) throws Exception
     {
         Block48[] generatedKeys = new Block48[numberOfRounds];

@@ -21,7 +21,6 @@ public class Key {
 
     }
 
-    // Odczytanie tekstu z klucza
     public String getKeyText() {
         return StringByteConverter.BytesToString(bytes);
     }
@@ -31,7 +30,6 @@ public class Key {
     }
 
 
-    //Generowanie klucza
     private void generateRandomKey() {
         SecureRandom rng = new SecureRandom();
         this.bytes = new byte[8];

@@ -103,7 +103,17 @@ public class Des {
        BlockHalf left = new BlockHalf();
        BlockHalf right = new BlockHalf();
        SubKey subKeys = new SubKey(16, key);
-       Block48[] block48 =  subKeys.subkeys.clone();
+       Block48[] block48 = new Block48[16];
+       if(!encryption) {
+           Block48[] straight =  subKeys.subkeys.clone();
+           for(int i = 0; i < 16; i++) {
+               block48[i] = new Block48();
+               block48[i].blocks = straight[numberOfRounds - 1 - i].blocks.clone();
+           }
+       } else {
+           block48 =  subKeys.subkeys.clone();
+       }
+
         for (int i = 0; i < blocks.length; i++)
         {
             initialPermutation(blocks[i]);
@@ -112,7 +122,7 @@ public class Des {
                 right.blocks[j] = blocks[i].blocks[j + 4];
             }
             for(int j = 0; j < numberOfRounds; j++) {
-                round(left, right, block48[(encryption ? j : (numberOfRounds - 1 - j))]);
+                round(left, right, block48[j]);
             }
             mergeHalvesTo64BitBlock(right, left, blocks[i]);
             finalPermutation(blocks[i]);
@@ -147,17 +157,15 @@ public class Des {
         for (int i = 0; i < block48.blocks.length; i++)
             block48.blocks[i] ^= key48.blocks[i];
 
-        Block8[] block6Table = divide48BitBlockInto6BitBlocks(block48);
+        Block8[] block6Table = split48BitBlockTo8GroupsPer6BitBlocks(block48);
 
         Block8[] block4Table = new Block8[8];
         for (int i = 0; i < block4Table.length; i++)
         {
             block4Table[i] = new Block8();
-            block4Table[i].blocks[0] = performSubstitution(i, block6Table[i]).blocks[0];
+            block4Table[i].blocks[0] = substitution(i, block6Table[i]).blocks[0];
         }
-
         merge4BitBlocksInto32BitBlock(block4Table, block32);
-
         permutationP(block32);
     }
 
@@ -173,7 +181,6 @@ public class Des {
                 else
                     blocks64[i].blocks[j] = 0;
         }
-
         return blocks64;
     }
 
@@ -186,7 +193,6 @@ public class Des {
     }
 
 
-    // W drugą stronę
     private void mergeHalvesTo64BitBlock(BlockHalf blockLeftHalf, BlockHalf blockRightHalf, Block block) {
         for (int i = 0; i < 32; i++) {
             block.setBit(i, blockLeftHalf.getBit(i));
@@ -194,8 +200,7 @@ public class Des {
         }
     }
 
-    // Podział bloku 48 bitowego
-    private Block8[] divide48BitBlockInto6BitBlocks(Block48 block) {
+    private Block8[] split48BitBlockTo8GroupsPer6BitBlocks(Block48 block) {
         Block8[] block6Table = new Block8[8];
 
         for (int i = 0; i < 48; i++) {
@@ -236,19 +241,21 @@ public class Des {
         return block48;
     }
 
-    private Block8 performSubstitution(int n, Block8 input)
+    private Block8 substitution(int n, Block8 input)
     {
         Block8 output = new Block8();
+        int[] bits = new int[6];
+        for(int i = 0; i < bits.length; i++) {
+            int value = 0;
+            if (input.getBit(i)) {
+                value = 1;
+            }
+            bits[i] = value;
+        }
 
-        int[] inputBits = new int[6];
-        for(int i = 0; i < inputBits.length; i++)
-            inputBits[i] = (input.getBit(i) ? 1 : 0);
-
-        int rowNumber = 2 * inputBits[0] + inputBits[5];
-        int columnNumber = 8 * inputBits[1] + 4 * inputBits[2] + 2 * inputBits[3] + inputBits[4];
-
-        output.blocks[0] = (byte)(sBoxes[n][rowNumber * 16 + columnNumber] << 4);
-
+        int row = 2 * bits[0] + bits[5];
+        int col = 8 * bits[1] + 4 * bits[2] + 2 * bits[3] + bits[4];
+        output.blocks[0] = (byte)(sBoxes[n][row * 16 + col] << 4);
         return output;
     }
     private BlockHalf permutationP(BlockHalf block32)
