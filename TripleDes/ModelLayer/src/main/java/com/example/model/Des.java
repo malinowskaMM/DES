@@ -1,9 +1,18 @@
 package com.example.model;
 
 public class Des {
-    //Stałe dane do szyfrowania/deszyfrowania
     static final int numberOfRounds = 16;
-    static final int[] numberOfKeyShiftsPerRound = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
+
+    final static int[] permutationPBlockTable = {
+            16, 7, 20, 21,
+            29, 12, 28, 17,
+            1, 15, 23, 26,
+            5, 18, 31, 10,
+            2, 8, 24, 14,
+            32, 27, 3, 9,
+            19, 13, 30, 6,
+            22, 11, 4, 25
+    };
     static final int[] permutationInitialTable = {
             58, 50, 42, 34, 26, 18, 10, 2,
             60, 52, 44, 36, 28, 20, 12, 4,
@@ -25,26 +34,9 @@ public class Des {
                     34, 2, 42, 10, 50, 18, 58, 26,
                     33, 1, 41, 9, 49, 17, 57, 25
             };
-    static final int[] permutationParityDropTable =
-            {
-                    57, 49, 41, 33, 25, 17, 9, 1,
-                    58, 50, 42, 34, 26, 18, 10, 2,
-                    59, 51, 43, 35, 27, 19, 11, 3,
-                    60, 52, 44, 36, 63, 55, 47, 39,
-                    31, 23, 15, 7, 62, 54, 46, 38,
-                    30, 22, 14, 6, 61, 53, 45, 37,
-                    29, 21, 13, 5, 28, 20, 12, 4
-            };
-    static final int[] permutationTableKeyCompression =
-            {
-                    14, 17, 11, 24, 1, 5, 3, 28,
-                    15, 6, 21, 10, 23, 19, 12, 4,
-                    26, 8, 16, 7, 27, 20, 13, 2,
-                    41, 52, 31, 37, 47, 55, 30, 40,
-                    51, 45, 33, 48, 44, 49, 39, 56,
-                    34, 53, 46, 42, 50, 36, 29, 32
-            };
-    static final byte[][] substitutionBoxesTable = {
+
+
+    static final byte[][] sBoxes = {
             {
                     14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
                     0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
@@ -106,69 +98,40 @@ public class Des {
     };
 
 
-
-    byte[] algorithmBase(byte[] text, Key key, boolean encryption) throws Exception {
-       Block[] blocks64 = divideBlocks64Bits(text);
-       BlockHalf block32Left = new BlockHalf();
-       BlockHalf block32Right = new BlockHalf();
-       Block48[] block48 = generateRoundKeys(key);
-        for (int i = 0; i < blocks64.length; i++)
+    byte[] algorithmDes(byte[] text, Key key, boolean encryption) throws Exception {
+       Block[] blocks = splitFileToBlocks(text);
+       BlockHalf left = new BlockHalf();
+       BlockHalf right = new BlockHalf();
+       SubKey subKeys = new SubKey(16, key);
+       Block48[] block48 =  subKeys.subkeys.clone();
+        for (int i = 0; i < blocks.length; i++)
         {
-            initialPermutation(blocks64[i]); // Wywołanie permutacji początkowa
-            divide64BitBlockIntoHalves(blocks64[i], block32Left, block32Right); // Podział bloku na dwie części
-
-            for(int j = 0; j < numberOfRounds; j++)
-                performRound(block32Left, block32Right, block48[(encryption ? j : (numberOfRounds - 1 - j))]);//Wykonanie rundy funkcji Feistela
-
-            merge32BitBlockHalvesInto64BitBlock(block32Right, block32Left, blocks64[i]); // Połącznie podzielonych bloków
-            finalPermutation(blocks64[i]); // Końcowa permutacja
+            initialPermutation(blocks[i]);
+            for (int j = 0; j < 4; j++) {
+                left.blocks[j] = blocks[i].blocks[j];
+                right.blocks[j] = blocks[i].blocks[j + 4];
+            }
+            for(int j = 0; j < numberOfRounds; j++) {
+                round(left, right, block48[(encryption ? j : (numberOfRounds - 1 - j))]);
+            }
+            mergeHalvesTo64BitBlock(right, left, blocks[i]);
+            finalPermutation(blocks[i]);
         }
-
-        return merge64BitBlocks(blocks64);
-
+        return mergeBlocksToOutput(blocks);
     }
 
-    String algorithmBase(String inputText, Key key, boolean encryption) throws Exception {
+    String algorithmDes(String inputText, Key key, boolean encryption) throws Exception {
         byte [] inputBytes = StringByteConverter.StringToByte(inputText);
-        byte [] outputBytes = algorithmBase(inputBytes,key,encryption);
+        byte [] outputBytes = algorithmDes(inputBytes,key,encryption);
         return StringByteConverter.BytesToString(outputBytes);
     }
-    //Generowanie poszczególnych klczy funkcji Feistela
-    private Block48[] generateRoundKeys(Key key) throws Exception
-    {
-        Block48[] generatedKeys = new Block48[numberOfRounds];
 
-        Block56 key56 = dropParityBits(new Block(key.getBytes()));
-
-        for (int i = 0; i < numberOfRounds; i++)
-        {
-            for (int j = 0; j < numberOfKeyShiftsPerRound[i]; j++)
-                rotateBitsLeft(key56);
-
-            generatedKeys[i] = compressKey(key56);
-        }
-
-        return generatedKeys;
-    }
-    //Zmaina bitów podkluczy
-    void rotateBitsLeft(Block56 block)
-    {
-        BlockHalf blockLeft28 = new BlockHalf();
-        BlockHalf blockRight28 = new BlockHalf();
-        divide56BitBlockIntoHalves(block, blockLeft28, blockRight28);
-
-        moveBitsLeft28(blockLeft28);
-        moveBitsLeft28(blockRight28);
-
-        merge28BitBlockHalvesInto56BitBlock(blockLeft28, blockRight28, block);
-    }
-
-    private void performRound(BlockHalf leftBlock32, BlockHalf rightBlock32, Block48 key)
+    private void round(BlockHalf leftBlock32, BlockHalf rightBlock32, Block48 key)
     {
         BlockHalf copyRightBlock32 = new BlockHalf();
         copyRightBlock32.blocks = rightBlock32.blocks.clone();
 
-        roundFunction(rightBlock32, key);
+        FFunction(rightBlock32, key);
 
         for (int i = 0; i < 4; i++)
             leftBlock32.blocks[i] ^= rightBlock32.blocks[i];
@@ -176,8 +139,8 @@ public class Des {
         rightBlock32.blocks = leftBlock32.blocks.clone();
         leftBlock32.blocks = copyRightBlock32.blocks.clone();
     }
-    //Rozszerzanie 32 bitów do 48 bitów
-    private void roundFunction(BlockHalf block32, Block48 key48)
+
+    private void FFunction(BlockHalf block32, Block48 key48)
     {
         Block48 block48 = expandTo48Bits(block32);
 
@@ -198,8 +161,7 @@ public class Des {
         permutationP(block32);
     }
 
-    //Podział Bloków na części 64 bitowe
-    private Block[] divideBlocks64Bits(byte[] bytes) {
+    private Block[] splitFileToBlocks(byte[] bytes) {
         Block[] blocks64 = new Block[(bytes.length + 8 - 1) / 8];
         int bytePosition = 0;
         for (int i = 0; i < blocks64.length; i++) {
@@ -215,45 +177,20 @@ public class Des {
         return blocks64;
     }
 
-    //Złączenie bloków
-    private byte[] merge64BitBlocks(Block[] blocks64) {
+    private byte[] mergeBlocksToOutput(Block[] blocks64) {
         byte[] bytes = new byte[8 * blocks64.length];
-
         for (int i = 0; i < bytes.length; i++)
             bytes[i] = blocks64[i / 8].blocks[i % 8];
 
         return bytes;
     }
 
-    // Podział bloku 64 bitowego na dwa 32 bitowe
-    private void divide64BitBlockIntoHalves(Block block64, BlockHalf block32Left, BlockHalf block32Right) {
-        for (int i = 0; i < 4; i++) {
-            block32Left.blocks[i] = block64.blocks[i];
-            block32Right.blocks[i] = block64.blocks[i + 4];
-        }
-    }
 
     // W drugą stronę
-    private void merge32BitBlockHalvesInto64BitBlock(BlockHalf blockLeftHalf, BlockHalf blockRightHalf, Block block) {
+    private void mergeHalvesTo64BitBlock(BlockHalf blockLeftHalf, BlockHalf blockRightHalf, Block block) {
         for (int i = 0; i < 32; i++) {
             block.setBit(i, blockLeftHalf.getBit(i));
             block.setBit(i + 32, blockRightHalf.getBit(i));
-        }
-    }
-
-    //Podział bloku 56 bitowego na dwie cześci
-    private void divide56BitBlockIntoHalves(Block56 block56, BlockHalf blockLeft28, BlockHalf blockRight28) {
-        for (int i = 0; i < 28; i++) {
-            blockLeft28.setBit(i, block56.getBit(i));
-            blockRight28.setBit(i, block56.getBit(i + 28));
-        }
-    }
-
-    //W drugą stronę
-    private void merge28BitBlockHalvesInto56BitBlock(BlockHalf blockLeftHalf, BlockHalf blockRightHalf, Block56 block) {
-        for (int i = 0; i < 28; i++) {
-            block.setBit(i, blockLeftHalf.getBit(i));
-            block.setBit(i + 28, blockRightHalf.getBit(i));
         }
     }
 
@@ -269,14 +206,11 @@ public class Des {
         return block6Table;
     }
 
-    // Złączenie małych bloków w blok 32 bitowy
     private void merge4BitBlocksInto32BitBlock(Block8[] block4Table, BlockHalf block) {
         for (int i = 0; i < block.blocks.length * Block.bitsAmount; i++)
             block.setBit(i, block4Table[i / 4].getBit(i % 4));
     }
 
-    //Permutacje
-    //Początkowa permutacja zgodna z permutationInitialTable
     private void initialPermutation(Block block64) {
         Block temp = new Block();
         for (int i = 0; i < permutationInitialTable.length; i++) {
@@ -285,7 +219,6 @@ public class Des {
         block64.blocks = temp.blocks.clone();
     }
 
-    //Końcowa permutacja zgodna z permutationFinalTable
     private void finalPermutation(Block block64) {
         Block output = new Block();
         for (int i = 0; i < 64; i++)
@@ -293,27 +226,6 @@ public class Des {
         block64.blocks = output.blocks.clone();
     }
 
-    //
-    private Block56 dropParityBits(Block block64) {
-        Block56 block56 = new Block56();
-
-        for (int i = 0; i < permutationParityDropTable.length; i++)
-            block56.setBit(i, block64.getBit(permutationParityDropTable[i] - 1));
-
-        return block56;
-    }
-
-    //Ucięcie klucza do 48bitów zgodznie z permutationTableKeyCompression
-    private Block48 compressKey(Block56 block56) {
-        Block48 block48 = new Block48();
-
-        for (int i = 0; i < 48; i++)
-            block48.setBit(i, block56.getBit(permutationTableKeyCompression[i] - 1));
-
-        return block48;
-    }
-
-    //Rozszeranie klucza 32 bitowego do 48 bitowego
     private Block48 expandTo48Bits(BlockHalf block32)
     {
         Block48 block48 = new Block48();
@@ -323,17 +235,7 @@ public class Des {
 
         return block48;
     }
-    //Przestawianie bitów w cześciach
-    private void moveBitsLeft28(BlockHalf block28)
-    {
-        boolean orphanBit = block28.getBit(0);
 
-        for (int i = 0; i < 27; i++)
-            block28.setBit(i, block28.getBit(i + 1));
-
-        block28.setBit(27, orphanBit);
-    }
-    //Podmiana bitów
     private Block8 performSubstitution(int n, Block8 input)
     {
         Block8 output = new Block8();
@@ -345,27 +247,16 @@ public class Des {
         int rowNumber = 2 * inputBits[0] + inputBits[5];
         int columnNumber = 8 * inputBits[1] + 4 * inputBits[2] + 2 * inputBits[3] + inputBits[4];
 
-        output.blocks[0] = (byte)(substitutionBoxesTable[n][rowNumber * 16 + columnNumber] << 4);
+        output.blocks[0] = (byte)(sBoxes[n][rowNumber * 16 + columnNumber] << 4);
 
         return output;
     }
     private BlockHalf permutationP(BlockHalf block32)
     {
         BlockHalf output = new BlockHalf();
-
-        final byte[] permutationPBlockTable = {
-                16, 7, 20, 21,
-                29, 12, 28, 17,
-                1, 15, 23, 26,
-                5, 18, 31, 10,
-                2, 8, 24, 14,
-                32, 27, 3, 9,
-                19, 13, 30, 6,
-                22, 11, 4, 25
-        };
-
-        for (int i = 0; i < 32; i++)
+        for (int i = 0; i < 32; i++) {
             output.setBit(i, block32.getBit(permutationPBlockTable[i] - 1));
+        }
 
         for(int i = 0; i < 32; i++)
             block32.setBit(i, output.getBit(i));
@@ -374,4 +265,3 @@ public class Des {
     }
 
 }
-

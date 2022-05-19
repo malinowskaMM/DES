@@ -20,9 +20,9 @@ public class TripleDes {
 
     private byte[] algorithmTripleDes(byte[] input, Key[] key, boolean encryption) throws Exception {
         byte[] output;
-        output = des.algorithmBase(input, key[0], encryption);
-        output = des.algorithmBase(output, key[1], !encryption);
-        output = des.algorithmBase(output, key[2], encryption);
+        output = des.algorithmDes(input, key[0], encryption);
+        output = des.algorithmDes(output, key[1], !encryption);
+        output = des.algorithmDes(output, key[2], encryption);
 
         return output;
     }
