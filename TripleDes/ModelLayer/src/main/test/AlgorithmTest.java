@@ -27,6 +27,33 @@ public class AlgorithmTest {
 
 
     @Test
+    public void stringEncDecTest() throws Exception {
+        int stringLen = 10;
+        int keyCount = 20;
+        int stringCount = 20;
+
+        for(int j = 0; j < keyCount; j++) {
+            Key[] keys = new Key[3];
+            keys[0] = new Key();
+            keys[1] = new Key();
+            keys[2] = new Key();
+            TripleDes tripleDes = new TripleDes();
+
+            for ( int k = 0; k < stringCount; k++) {
+                Random random = new Random();
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < stringLen; i++) {
+                    sb.append((char) (random.nextInt(26) + 'a'));
+                }
+                String testedStr = sb.toString();
+                String encrypted = tripleDes.encrypt(testedStr, keys);
+                String decrypted = tripleDes.decrypt(encrypted, keys);
+                assertEquals(decrypted, testedStr);
+            }
+        }
+    }
+
+    @Test
     public void testTest() throws Exception {
         for (int i = 0; i < 50; i++) {
 
