@@ -1,6 +1,9 @@
 package com.example.model;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Random;
 
 public class Key {
     private byte[] bytes;
@@ -31,9 +34,10 @@ public class Key {
 
 
     private void generateRandomKey() {
-        SecureRandom rng = new SecureRandom();
+        Random rng = new Random();
         this.bytes = new byte[8];
         rng.nextBytes(this.bytes);
+
     }
 
 }

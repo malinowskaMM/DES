@@ -41,11 +41,11 @@ public class HelloController extends Window {
 
     String plainText;
     String cryptogramText;
-    TripleDes tripleDes;
-    Key[] keys;
-    Key first;
-    Key second;
-    Key third;
+//    TripleDes tripleDes;
+//    Key[] keys;
+//    Key first;
+//    Key second;
+//    Key third;
     byte[] byteArray;
 
     private void openWarningDialog(String text) {
@@ -58,7 +58,7 @@ public class HelloController extends Window {
     }
 
     public int encryptFile(ActionEvent actionEvent) throws Exception {
-        tripleDes = new TripleDes();
+        TripleDes tripleDes = new TripleDes();
         if(key1Field.getText().isEmpty()) {
             openWarningDialog("Brak pierwszego klucza");
             return -1; }
@@ -68,7 +68,7 @@ public class HelloController extends Window {
         if(key3Field.getText().isEmpty()) {
             openWarningDialog("Brak trzeciego klucza");
             return -1;}
-        keys = new Key[3];
+        Key[] keys = new Key[3];
         keys[0]= new Key(key1Field.getText());
         keys[1] = new Key(key2Field.getText());
         keys[2] = new Key(key3Field.getText());
@@ -90,7 +90,7 @@ public class HelloController extends Window {
     }
 
     public int decryptFile(ActionEvent actionEvent) throws Exception {
-        tripleDes = new TripleDes();
+        TripleDes tripleDes = new TripleDes();
         if(key1Field.getText().isEmpty()) {
             openWarningDialog("Brak pierwszego klucza");
             return -1; }
@@ -100,7 +100,7 @@ public class HelloController extends Window {
         if(key3Field.getText().isEmpty()) {
             openWarningDialog("Brak trzeciego klucza");
             return -1;}
-        keys = new Key[3];
+        Key[] keys = new Key[3];
         keys[0]= new Key(key1Field.getText());
         keys[1] = new Key(key2Field.getText());
         keys[2] = new Key(key3Field.getText());
@@ -123,7 +123,7 @@ public class HelloController extends Window {
 
     public int encryptMessage(ActionEvent actionEvent) throws Exception {
         plainText = plaintextArea.getText();
-        tripleDes = new TripleDes();
+        TripleDes tripleDes = new TripleDes();
         if(key1Field.getText().isEmpty()) {
             openWarningDialog("Brak pierwszego klucza");
             return -1; }
@@ -136,7 +136,7 @@ public class HelloController extends Window {
         if(plaintextArea.toString().isEmpty()) {
             openWarningDialog("Pusta wiadomosc do zakodowania");
             return -1;}
-        keys = new Key[3];
+        Key[] keys = new Key[3];
         keys[0]= new Key(key1Field.getText());
         keys[1] = new Key(key2Field.getText());
         keys[2] = new Key(key3Field.getText());
@@ -148,7 +148,7 @@ public class HelloController extends Window {
 
     public int decryptMessage(ActionEvent actionEvent) throws Exception {
         cryptogramText = cryptogramArea.getText();
-        tripleDes = new TripleDes();
+        TripleDes tripleDes = new TripleDes();
         if(key1Field.getText().isEmpty()) {
             openWarningDialog("Brak pierwszego klucza");
             return -1; }
@@ -161,7 +161,7 @@ public class HelloController extends Window {
         if(cryptogramArea.toString().isEmpty()) {
             openWarningDialog("Pusta wiadomosc do zakodowania");
             return -1;}
-        keys = new Key[3];
+        Key[] keys = new Key[3];
         keys[0]= new Key(key1Field.getText());
         keys[1] = new Key(key2Field.getText());
         keys[2] = new Key(key3Field.getText());
@@ -220,6 +220,7 @@ public class HelloController extends Window {
     public void setCryptogramClearButton(ActionEvent actionEvent) {
         cryptogramArea.clear();
         cryptogramText = "";
+
     }
 
     public void loadKeysFromFile(ActionEvent actionEvent) {
@@ -248,7 +249,7 @@ public class HelloController extends Window {
     }
 
     public void saveKeysToFile(ActionEvent actionEvent) throws Exception {
-        keys = new Key[3];
+        Key[] keys = new Key[3];
         keys[0] = new Key(key1Field.getText());
         keys[1] = new Key(key2Field.getText());
         keys[2] = new Key(key3Field.getText());
@@ -265,17 +266,17 @@ public class HelloController extends Window {
     }
 
     public void generateFirstKey(){
-        first = new Key();
+        Key first = new Key();
         key1Field.setText(first.getKeyText());
     }
 
     public void generateSecondKey() {
-        second = new Key();
+        Key second = new Key();
         key2Field.setText(second.getKeyText());
     }
 
     public void generateThirdKey() {
-        third = new Key();
+        Key third = new Key();
         key3Field.setText(third.getKeyText());
     }
 
