@@ -40,6 +40,7 @@ public class AlgorithmTest {
     public void testFileTest() throws Exception {
 
         byte[] s = Files.readAllBytes(Path.of("D:\\DES\\TripleDes\\skryba.txt"));
+        System.out.println(Arrays.toString(s));
 
         for (int i = 0; i < 50; i++) {
             Key[] keys = new Key[3];
@@ -49,13 +50,13 @@ public class AlgorithmTest {
             TripleDes tripleDes = new TripleDes();
 
             byte[] result = tripleDes.encrypt(s, keys);
-            System.out.printf(Arrays.toString(result));
             byte[] result2 = tripleDes.decrypt(result, keys);
-            System.out.printf(Arrays.toString(result2));
+            System.out.println(Arrays.toString(result2));
+            System.out.println(result2.length);
+            System.out.println(i);
 
-            System.out.printf("----------------------");
 
-            Assertions.assertTrue(Arrays.equals(result, result2));
+            Assertions.assertTrue(Arrays.equals(result2, s));
         }
     }
 }
