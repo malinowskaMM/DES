@@ -140,7 +140,7 @@ public class HelloController extends Window {
         keys[0]= new Key(key1Field.getText());
         keys[1] = new Key(key2Field.getText());
         keys[2] = new Key(key3Field.getText());
-        cryptogramText = tripleDes.encrypt(plainText, keys);
+        cryptogramText = tripleDes.encrypt(plaintextArea.getText(), keys);
         cryptogramArea.setText(cryptogramText);
         return 0;
     }
@@ -165,7 +165,7 @@ public class HelloController extends Window {
         keys[0]= new Key(key1Field.getText());
         keys[1] = new Key(key2Field.getText());
         keys[2] = new Key(key3Field.getText());
-        plainText = tripleDes.decrypt(cryptogramText, keys);
+        plainText = tripleDes.decrypt(cryptogramArea.getText(), keys);
         plaintextArea.setText(plainText);
         return 0;
     }

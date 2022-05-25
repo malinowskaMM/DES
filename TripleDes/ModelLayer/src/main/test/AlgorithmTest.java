@@ -30,8 +30,7 @@ public class AlgorithmTest {
     public void testTest() throws Exception {
         for (int i = 0; i < 50; i++) {
 
-            String s = stringGenerator();
-            System.out.println(s);
+            String s =  stringGenerator();
             Key[] keys = new Key[3];
             keys[0] = new Key();
             keys[1] = new Key();
@@ -49,8 +48,6 @@ public class AlgorithmTest {
     public void testFileTest() throws Exception {
 
         byte[] s = Files.readAllBytes(Path.of("D:\\DES\\TripleDes\\skryba.txt"));
-        byte[] s2 = Files.readAllBytes(Path.of("D:\\DES\\TripleDes\\plik.txt"));
-        System.out.println(Arrays.toString(s2));
 
         for (int i = 0; i < 50; i++) {
             Key[] keys = new Key[3];
@@ -59,14 +56,11 @@ public class AlgorithmTest {
             keys[2] = new Key();
             TripleDes tripleDes = new TripleDes();
 
-            byte[] result = tripleDes.encrypt(s2, keys);
+            byte[] result = tripleDes.encrypt(s, keys);
             byte[] result2 = tripleDes.decrypt(result, keys);
-            System.out.println(Arrays.toString(result2));
-            System.out.println(result2.length);
-            System.out.println(i);
 
 
-            Assertions.assertTrue(Arrays.equals(result2, s2));
+            Assertions.assertTrue(Arrays.equals(result2, s));
         }
     }
 }

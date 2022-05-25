@@ -1,5 +1,7 @@
 package com.example.model;
 
+import java.util.Arrays;
+
 public class TripleDes {
     public byte[] encrypt(byte[] plainText, Key[] key) throws Exception {
         return algorithmTripleDes(plainText, key, true);
@@ -28,7 +30,9 @@ public class TripleDes {
     }
     private String algorithmTripleDes(String input, Key[] key, boolean encryption) throws Exception {
         byte[] inputBytes = StringByteConverter.StringToByte(input);
+        System.out.println(Arrays.toString(inputBytes));
         byte[] outputBytes = algorithmTripleDes(inputBytes, key, encryption);
+        System.out.println(Arrays.toString(outputBytes));
         return StringByteConverter.BytesToString(outputBytes);
     }
 }
